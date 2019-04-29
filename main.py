@@ -59,7 +59,7 @@ class Button(pygame.sprite.Sprite):
     def update(self, event):
         if self.rect.x < event.pos[0] < self.rect.x + self.rect.width and \
                 self.rect.y < event.pos[1] < self.rect.y + self.rect.height:
-            self.action()
+            self.action(event)
 
 
 class MapImage(pygame.sprite.Sprite):
@@ -70,10 +70,16 @@ class MapImage(pygame.sprite.Sprite):
                                     pygame.SRCALPHA, 32)
         self.spn = None
         self.ll = None
+        self.map_type = 'map'
 
-    def new_map(self):
+    def new_map(self, event):
         coordinates = input_label.get_text()
-        toponym = geocoder.get_toponym(coordinates)
+        try:
+            toponym = geocoder.get_toponym(coordinates)
+        except:
+            font = pygame.font.Font(None, 50)
+            self.image = font.render('Введите корректные координаты', 1, pygame.Color('red'))
+            return
         self.spn = geocoder.get_spn(toponym)
         self.ll = geocoder.get_ll(toponym)
         self.update_map()
@@ -89,7 +95,7 @@ class MapImage(pygame.sprite.Sprite):
         self.update_map()
 
     def update_map(self):
-        mapapi.save_map(self.ll, self.spn)
+        mapapi.save_map(self.ll, self.spn, self.map_type)
         self.image = load_image('_map.png')
 
     def move_map(self, event):
@@ -108,14 +114,25 @@ class MapImage(pygame.sprite.Sprite):
 
         self.update_map()
 
+    def update_type(self, map_type):
+        self.map_type = map_type
+        self.update_map()
+
 
 input_label = InputLabel(15, 15, 100, 20)
-Border(10, 10, 300, 30)
+Border(10, 10, 200, 30)
 
 map_img = MapImage()
 Border(10, 50, 600, 450)
-btn_search = Button(330, 15, 100, 20, 'Найти', map_img.new_map)
-Border(320, 10, 80, 30)
+btn_search = Button(230, 15, 70, 20, 'Найти', map_img.new_map)
+Border(220, 10, 80, 30)
+
+btn_scheme = Button(365, 15, 70, 20, 'Схема', lambda x: map_img.update_type('map'))
+Border(360, 10, 70, 30)
+btn_satellite = Button(435, 15, 70, 20, 'Спутник', lambda x: map_img.update_type('sat'))
+Border(430, 10, 90, 30)
+btn_hybrid = Button(525, 15, 70, 20, 'Гибрид', lambda x: map_img.update_type('sat,skl'))
+Border(520, 10, 90, 30)
 
 
 def load_image(name, colorkey=None):
