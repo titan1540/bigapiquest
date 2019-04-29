@@ -6,7 +6,7 @@ import geocoder
 
 pygame.init()
 clock = pygame.time.Clock()
-WIDTH, HEIGHT = 620, 510
+WIDTH, HEIGHT = 730, 510
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 FPS = 60
 INCLUDED_SYMBOLS = ' ,.-()/\\'
@@ -29,7 +29,7 @@ class Border(pygame.sprite.Sprite):
 class InputLabel(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, width, height):
         super().__init__(all_sprites)
-        self.font = pygame.font.Font(None, 20)
+        self.font = pygame.font.Font(None, 25)
         self.request = ''
         self.rect = pygame.Rect(pos_x, pos_y, width, height)
         self.image = self.font.render(self.request, 1, pygame.Color('black'))
@@ -120,21 +120,28 @@ class MapImage(pygame.sprite.Sprite):
         self.map_type = map_type
         self.update_map()
 
+    def discard_point(self, event):
+        self.pt = None
+        self.update_map()
 
-input_label = InputLabel(15, 18, 100, 20)
-Border(10, 10, 260, 30)
 
 map_img = MapImage()
 Border(10, 50, 600, 450)
-btn_search = Button(285, 15, 70, 20, 'Найти', map_img.new_map)
-Border(275, 10, 80, 30)
 
-btn_scheme = Button(365, 15, 70, 20, 'Схема', lambda x: map_img.update_type('map'))
-Border(360, 10, 70, 30)
-btn_satellite = Button(435, 15, 70, 20, 'Спутник', lambda x: map_img.update_type('sat'))
-Border(430, 10, 90, 30)
-btn_hybrid = Button(525, 15, 70, 20, 'Гибрид', lambda x: map_img.update_type('sat,skl'))
-Border(520, 10, 90, 30)
+input_label = InputLabel(15, 15, 100, 20)
+Border(10, 10, 510, 30)
+btn_search = Button(540, 15, 70, 20, 'Найти', map_img.new_map)
+Border(530, 10, 80, 30)
+
+btn_discard = Button(625, 15, 70, 20, 'Сбросить', map_img.discard_point)
+Border(620, 10, 105, 30)
+
+btn_scheme = Button(625, 55, 70, 20, 'Схема', lambda x: map_img.update_type('map'))
+Border(620, 50, 70, 30)
+btn_satellite = Button(625, 85, 70, 20, 'Спутник', lambda x: map_img.update_type('sat'))
+Border(620, 80, 90, 30)
+btn_hybrid = Button(625, 115, 70, 20, 'Гибрид', lambda x: map_img.update_type('sat,skl'))
+Border(620, 110, 90, 30)
 
 
 def load_image(name, colorkey=None):
