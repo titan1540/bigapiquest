@@ -6,7 +6,7 @@ import geocoder
 
 pygame.init()
 clock = pygame.time.Clock()
-WIDTH, HEIGHT = 730, 510
+WIDTH, HEIGHT = 730, 550
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 FPS = 60
 INCLUDED_SYMBOLS = ' ,.-()/\\'
@@ -27,11 +27,11 @@ class Border(pygame.sprite.Sprite):
 
 
 class InputLabel(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y, width, height):
+    def __init__(self, pos_x, pos_y):
         super().__init__(all_sprites)
         self.font = pygame.font.Font(None, 25)
         self.request = ''
-        self.rect = pygame.Rect(pos_x, pos_y, width, height)
+        self.rect = pygame.Rect(pos_x, pos_y, 0, 0)
         self.image = self.font.render(self.request, 1, pygame.Color('black'))
 
     def push_button(self, event):
@@ -45,6 +45,19 @@ class InputLabel(pygame.sprite.Sprite):
 
     def get_text(self):
         return self.request
+
+
+class TextLabel(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(all_sprites)
+        self.font = pygame.font.Font(None, 15)
+        self.text = ''
+        self.rect = pygame.Rect(pos_x, pos_y, 0, 0)
+        self.image = self.font.render(self.text, 1, pygame.Color('black'))
+
+    def set_text(self, text):
+        self.text = text
+        self.image = self.font.render(self.text, 1, pygame.Color('black'))
 
 
 class Button(pygame.sprite.Sprite):
@@ -65,15 +78,16 @@ class Button(pygame.sprite.Sprite):
 class MapImage(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(all_sprites)
-        self.rect = pygame.Rect(10, 50, 600, 450)
+        self.rect = pygame.Rect(10, 90, 600, 450)
         self.image = pygame.Surface((600, 450),
                                     pygame.SRCALPHA, 32)
         self.spn = None
         self.ll = None
         self.map_type = 'map'
         self.pt = None
+        self.address = None
 
-    def new_map(self, event):
+    def new_map(self, event=None):
         request = input_label.get_text()
         try:
             toponym = geocoder.get_toponym(request)
@@ -84,16 +98,16 @@ class MapImage(pygame.sprite.Sprite):
         self.spn = geocoder.get_spn(toponym)
         self.ll = geocoder.get_ll(toponym)
         self.pt = self.ll
+        self.address = geocoder.get_address(toponym)
         self.update_map()
 
-    def update_spn(self, event=None):
-        if event is not None:
-            if event.key == pygame.K_PAGEUP:
-                if self.spn[0] * 2 <= 90 and self.spn[1] * 2 <= 90:
-                    self.spn = self.spn[0] * 2, self.spn[1] * 2
-            else:
-                if self.spn[0] / 2 >= 0.001 and self.spn[1] / 2 >= 0.001:
-                    self.spn = self.spn[0] / 2, self.spn[1] / 2
+    def update_spn(self, event):
+        if event.key == pygame.K_PAGEUP:
+            if self.spn[0] * 2 <= 90 and self.spn[1] * 2 <= 90:
+                self.spn = self.spn[0] * 2, self.spn[1] * 2
+        else:
+            if self.spn[0] / 2 >= 0.001 and self.spn[1] / 2 >= 0.001:
+                self.spn = self.spn[0] / 2, self.spn[1] / 2
         self.update_map()
 
     def update_map(self):
@@ -120,28 +134,47 @@ class MapImage(pygame.sprite.Sprite):
         self.map_type = map_type
         self.update_map()
 
-    def discard_point(self, event):
+    def discard_point(self, event=None):
         self.pt = None
         self.update_map()
 
+    def get_address(self):
+        return self.address
+
 
 map_img = MapImage()
-Border(10, 50, 600, 450)
+Border(10, 90, 600, 450)
 
-input_label = InputLabel(15, 15, 100, 20)
+input_label = InputLabel(15, 15)
 Border(10, 10, 510, 30)
-btn_search = Button(540, 15, 70, 20, 'Найти', map_img.new_map)
+
+address = TextLabel(15, 60)
+Border(10, 50, 600, 30)
+
+
+def search(event=None):
+    map_img.new_map()
+    address.set_text(map_img.get_address())
+
+
+btn_search = Button(540, 15, 70, 20, 'Найти', search)
 Border(530, 10, 80, 30)
 
-btn_discard = Button(625, 15, 70, 20, 'Сбросить', map_img.discard_point)
+
+def discard(event=None):
+    map_img.discard_point()
+    address.set_text('')
+
+
+btn_discard = Button(625, 15, 70, 20, 'Сбросить', discard)
 Border(620, 10, 105, 30)
 
-btn_scheme = Button(625, 55, 70, 20, 'Схема', lambda x: map_img.update_type('map'))
-Border(620, 50, 70, 30)
-btn_satellite = Button(625, 85, 70, 20, 'Спутник', lambda x: map_img.update_type('sat'))
-Border(620, 80, 90, 30)
-btn_hybrid = Button(625, 115, 70, 20, 'Гибрид', lambda x: map_img.update_type('sat,skl'))
-Border(620, 110, 90, 30)
+btn_scheme = Button(625, 95, 70, 20, 'Схема', lambda x: map_img.update_type('map'))
+Border(620, 90, 70, 30)
+btn_satellite = Button(625, 125, 70, 20, 'Спутник', lambda x: map_img.update_type('sat'))
+Border(620, 120, 90, 30)
+btn_hybrid = Button(625, 155, 70, 20, 'Гибрид', lambda x: map_img.update_type('sat,skl'))
+Border(620, 150, 90, 30)
 
 
 def load_image(name, colorkey=None):

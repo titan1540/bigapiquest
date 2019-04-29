@@ -44,3 +44,7 @@ def get_spn(toponym):
     up, right = map(float, toponym['boundedBy']['Envelope']['upperCorner'].split())
 
     return abs(up - down), abs(right - left)
+
+
+def get_address(toponym):
+    return toponym['metaDataProperty']['GeocoderMetaData']['text']
