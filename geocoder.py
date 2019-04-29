@@ -47,4 +47,9 @@ def get_spn(toponym):
 
 
 def get_address(toponym):
-    return toponym['metaDataProperty']['GeocoderMetaData']['text']
+    text = toponym['metaDataProperty']['GeocoderMetaData']['text']
+    try:
+        postcode = toponym['metaDataProperty']['GeocoderMetaData']['Address']['postal_code']
+    except Exception:
+        postcode = ''
+    return text, postcode

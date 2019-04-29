@@ -86,6 +86,7 @@ class MapImage(pygame.sprite.Sprite):
         self.map_type = 'map'
         self.pt = None
         self.address = None
+        self.postcode = 1
 
     def new_map(self, event=None):
         request = input_label.get_text()
@@ -139,7 +140,12 @@ class MapImage(pygame.sprite.Sprite):
         self.update_map()
 
     def get_address(self):
-        return self.address
+        text = self.address[0]
+        text += (', ' + self.address[1]) * self.postcode
+        return text
+
+    def onoff_postcode(self, event=None):
+        self.postcode ^= 1
 
 
 map_img = MapImage()
@@ -166,14 +172,23 @@ def discard(event=None):
     address.set_text('')
 
 
-btn_discard = Button(625, 15, 70, 20, 'Сбросить', discard)
+btn_discard = Button(625, 15, 85, 20, 'Сбросить', discard)
 Border(620, 10, 105, 30)
 
-btn_scheme = Button(625, 95, 70, 20, 'Схема', lambda x: map_img.update_type('map'))
-Border(620, 90, 70, 30)
-btn_satellite = Button(625, 125, 70, 20, 'Спутник', lambda x: map_img.update_type('sat'))
+
+def postcode(event=None):
+    map_img.onoff_postcode()
+    address.set_text(map_img.get_address())
+
+
+btn_postcode = Button(625, 55, 70, 20, 'Индекс', postcode)
+Border(620, 50, 90, 30)
+
+btn_scheme = Button(625, 95, 85, 20, 'Схема', lambda x: map_img.update_type('map'))
+Border(620, 90, 90, 30)
+btn_satellite = Button(625, 125, 85, 20, 'Спутник', lambda x: map_img.update_type('sat'))
 Border(620, 120, 90, 30)
-btn_hybrid = Button(625, 155, 70, 20, 'Гибрид', lambda x: map_img.update_type('sat,skl'))
+btn_hybrid = Button(625, 155, 85, 20, 'Гибрид', lambda x: map_img.update_type('sat,skl'))
 Border(620, 150, 90, 30)
 
 
