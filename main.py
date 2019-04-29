@@ -73,9 +73,9 @@ class MapImage(pygame.sprite.Sprite):
         self.map_type = 'map'
 
     def new_map(self, event):
-        coordinates = input_label.get_text()
+        request = input_label.get_text()
         try:
-            toponym = geocoder.get_toponym(coordinates)
+            toponym = geocoder.get_toponym(request)
         except:
             font = pygame.font.Font(None, 50)
             self.image = font.render('Введите корректные координаты', 1, pygame.Color('red'))
