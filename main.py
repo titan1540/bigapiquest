@@ -3,6 +3,7 @@ import pygame
 
 import mapapi
 import geocoder
+import searchapi
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -146,7 +147,7 @@ class MapImage(pygame.sprite.Sprite):
     def onoff_postcode(self, event=None):
         self.postcode ^= 1
 
-    def click(self, event):
+    def click_left(self, event):
         if 10 <= event.pos[0] <= 610 and 90 <= event.pos[1] <= 540 and self.ll is not None:
             left = self.ll[0] - self.spn[0] / 2
             down = self.ll[1] - self.spn[1] / 2
@@ -160,6 +161,27 @@ class MapImage(pygame.sprite.Sprite):
             request = str(left) + ' ' + str(down)
 
             self.new_map(request)
+
+    def click_right(self, event):
+        if 10 <= event.pos[0] <= 610 and 90 <= event.pos[1] <= 540 and self.ll is not None:
+            left = self.ll[0] - self.spn[0] / 2
+            down = self.ll[1] - self.spn[1] / 2
+
+            dx = (event.pos[0] - 10) / 600
+            dy = 1 - (event.pos[1] - 90) / 450
+
+            left += (dx * self.spn[0])
+            down += (dy * self.spn[1])
+
+            request = str(left) + ' ' + str(down)
+
+            toponym = geocoder.get_toponym(request)
+            organization_coordinates = searchapi.get_nearest_organization(toponym)[1]
+
+            if organization_coordinates is not None:
+                self.discard_point(event)
+                self.new_map(','.join(str(x) for x in organization_coordinates))
+
 
 
 map_img = MapImage()
@@ -239,9 +261,12 @@ while running:
             map_img.move_map(event)
         elif event.type == pygame.KEYDOWN:
             input_label.push_button(event)
-        elif event.type == pygame.MOUSEBUTTONDOWN:
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             buttons.update(event)
-            map_img.click(event)
+            map_img.click_left(event)
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
+            map_img.click_right(event)
+            address.set_text(map_img.get_address())
 
     all_sprites.draw(screen)
     pygame.display.flip()
