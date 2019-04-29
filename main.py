@@ -70,26 +70,34 @@ class MapImage(pygame.sprite.Sprite):
         self.rect = pygame.Rect(10, 50, 600, 450)
         self.image = pygame.Surface((600, 450),
                                     pygame.SRCALPHA, 32)
+        self.spn = None
+        self.ll = None
 
-    def update_map(self):
+    def update_map(self, event=None):
+        if event is not None:
+            if event.key == pygame.K_PAGEUP:
+                if self.spn[0] * 2 <= 90 and self.spn[1] * 2 <= 90:
+                    self.spn = self.spn[0] * 2, self.spn[1] * 2
+            else:
+                if self.spn[0] / 2 >= 0.001 and self.spn[1] / 2 >= 0.001:
+                    self.spn = self.spn[0] / 2, self.spn[1] / 2
+            mapapi.save_map(self.ll, self.spn)
+
         self.image = load_image('_map.png')
+
+    def new_map(self):
+        coordinates = input_label[0].get_text()
+        toponym = geocoder.get_toponym(coordinates)
+        self.spn = geocoder.get_spn(toponym)
+        self.ll = geocoder.get_ll(toponym)
+        mapapi.save_map(self.ll, self.spn)
+        self.update_map()
 
 
 input_label = (InputLabel(15, 15, 100, 20), Border(10, 10, 300, 30))
 
-
-def search():
-    coordinates = input_label[0].get_text()
-    toponym = geocoder.get_toponym(coordinates)
-    spn = geocoder.get_spn(toponym)
-    ll = geocoder.get_ll(toponym)
-    mapapi.save_map(ll, spn)
-    print(21232123)
-    map_img[0].update_map()
-
-
-btn_search = (Button(330, 15, 100, 20, 'Найти', search), Border(320, 10, 80, 30))
 map_img = (MapImage(), Border(10, 50, 600, 450))
+btn_search = (Button(330, 15, 100, 20, 'Найти', map_img[0].new_map), Border(320, 10, 80, 30))
 
 
 def load_image(name, colorkey=None):
@@ -116,6 +124,9 @@ while running:
         if event.type == pygame.QUIT or \
                 (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
             running = False
+        elif event.type == pygame.KEYDOWN and \
+                (event.key == pygame.K_PAGEUP or event.key == pygame.K_PAGEDOWN):
+            map_img[0].update_map(event)
         elif event.type == pygame.KEYDOWN:
             input_label[0].push_button(event)
         elif event.type == pygame.MOUSEBUTTONDOWN:
