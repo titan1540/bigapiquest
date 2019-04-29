@@ -88,8 +88,7 @@ class MapImage(pygame.sprite.Sprite):
         self.address = None
         self.postcode = 1
 
-    def new_map(self, event=None):
-        request = input_label.get_text()
+    def new_map(self, request):
         try:
             toponym = geocoder.get_toponym(request)
         except:
@@ -147,6 +146,21 @@ class MapImage(pygame.sprite.Sprite):
     def onoff_postcode(self, event=None):
         self.postcode ^= 1
 
+    def click(self, event):
+        if 10 <= event.pos[0] <= 610 and 90 <= event.pos[1] <= 540 and self.ll is not None:
+            left = self.ll[0] - self.spn[0] / 2
+            down = self.ll[1] - self.spn[1] / 2
+
+            dx = (event.pos[0] - 10) / 600
+            dy = 1 - (event.pos[1] - 90) / 450
+
+            left += (dx * self.spn[0])
+            down += (dy * self.spn[1])
+
+            request = str(left) + ' ' + str(down)
+
+            self.new_map(request)
+
 
 map_img = MapImage()
 Border(10, 90, 600, 450)
@@ -159,7 +173,7 @@ Border(10, 50, 600, 30)
 
 
 def search(event=None):
-    map_img.new_map()
+    map_img.new_map(input_label.get_text())
     address.set_text(map_img.get_address())
 
 
@@ -227,6 +241,7 @@ while running:
             input_label.push_button(event)
         elif event.type == pygame.MOUSEBUTTONDOWN:
             buttons.update(event)
+            map_img.click(event)
 
     all_sprites.draw(screen)
     pygame.display.flip()
