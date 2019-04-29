@@ -2,16 +2,24 @@ import requests
 import sys
 
 
-def save_map(map_ll, map_spn=None, map_type='map'):
+def save_map(map_ll, map_spn=None, map_type='map', point=None):
+    map_request = 'http://static-maps.yandex.ru/1.x/'
+
     ll = ','.join(str(x) for x in map_ll)
-    if map_spn is None:
-        map_request = 'http://static-maps.yandex.ru/1.x/?ll={ll}&l={map_type}'.format(ll=ll, map_type=map_type)
-    else:
+    static_params = {
+        'll': ll,
+        'l': map_type
+    }
+    if map_spn is not None:
         spn = ','.join(str(x) for x in map_spn)
-        map_request = 'http://static-maps.yandex.ru/1.x/?ll={ll}&spn={spn}&l={map_type}'.format(ll=ll, spn=spn,
-                                                                                                map_type=map_type)
+        static_params['spn'] = spn
+    
+    if point is not None:
+        pt = ','.join(str(x) for x in point)
+        static_params['pt'] = pt
+
     try:
-        response = requests.get(map_request)
+        response = requests.get(map_request, params=static_params)
 
         if not response:
             print('Ошибка выполнения запроса:')

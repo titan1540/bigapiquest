@@ -29,7 +29,7 @@ class Border(pygame.sprite.Sprite):
 class InputLabel(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, width, height):
         super().__init__(all_sprites)
-        self.font = pygame.font.Font(None, 30)
+        self.font = pygame.font.Font(None, 20)
         self.request = ''
         self.rect = pygame.Rect(pos_x, pos_y, width, height)
         self.image = self.font.render(self.request, 1, pygame.Color('black'))
@@ -71,6 +71,7 @@ class MapImage(pygame.sprite.Sprite):
         self.spn = None
         self.ll = None
         self.map_type = 'map'
+        self.pt = None
 
     def new_map(self, event):
         request = input_label.get_text()
@@ -82,6 +83,7 @@ class MapImage(pygame.sprite.Sprite):
             return
         self.spn = geocoder.get_spn(toponym)
         self.ll = geocoder.get_ll(toponym)
+        self.pt = self.ll
         self.update_map()
 
     def update_spn(self, event=None):
@@ -95,22 +97,22 @@ class MapImage(pygame.sprite.Sprite):
         self.update_map()
 
     def update_map(self):
-        mapapi.save_map(self.ll, self.spn, self.map_type)
+        mapapi.save_map(self.ll, self.spn, self.map_type, point=self.pt)
         self.image = load_image('_map.png')
 
     def move_map(self, event):
         if event.key == pygame.K_RIGHT:
-            if self.ll[0] + self.spn[0] < 180:
-                self.ll = self.ll[0] + self.spn[0], self.ll[1]
+            if self.ll[0] + self.spn[0] / 3 < 180:
+                self.ll = self.ll[0] + self.spn[0] / 3, self.ll[1]
         if event.key == pygame.K_LEFT:
-            if self.ll[0] - self.spn[0] > -180:
-                self.ll = self.ll[0] - self.spn[0], self.ll[1]
+            if self.ll[0] - self.spn[0] / 3 > -180:
+                self.ll = self.ll[0] - self.spn[0] / 3, self.ll[1]
         if event.key == pygame.K_UP:
-            if self.ll[1] + self.spn[1] < 90:
-                self.ll = self.ll[0], self.ll[1] + self.spn[1]
+            if self.ll[1] + self.spn[1] / 3 < 90:
+                self.ll = self.ll[0], self.ll[1] + self.spn[1] / 3
         if event.key == pygame.K_DOWN:
-            if self.ll[1] - self.spn[1] > -90:
-                self.ll = self.ll[0], self.ll[1] - self.spn[1]
+            if self.ll[1] - self.spn[1] / 3 > -90:
+                self.ll = self.ll[0], self.ll[1] - self.spn[1] / 3
 
         self.update_map()
 
@@ -119,13 +121,13 @@ class MapImage(pygame.sprite.Sprite):
         self.update_map()
 
 
-input_label = InputLabel(15, 15, 100, 20)
-Border(10, 10, 200, 30)
+input_label = InputLabel(15, 18, 100, 20)
+Border(10, 10, 260, 30)
 
 map_img = MapImage()
 Border(10, 50, 600, 450)
-btn_search = Button(230, 15, 70, 20, 'Найти', map_img.new_map)
-Border(220, 10, 80, 30)
+btn_search = Button(285, 15, 70, 20, 'Найти', map_img.new_map)
+Border(275, 10, 80, 30)
 
 btn_scheme = Button(365, 15, 70, 20, 'Схема', lambda x: map_img.update_type('map'))
 Border(360, 10, 70, 30)
@@ -163,7 +165,7 @@ while running:
                 (event.key == pygame.K_PAGEUP or event.key == pygame.K_PAGEDOWN):
             map_img.update_spn(event)
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-            btn_search.action()
+            btn_search.action(event)
         elif event.type == pygame.KEYDOWN and 273 <= event.key <= 276:
             map_img.move_map(event)
         elif event.type == pygame.KEYDOWN:
